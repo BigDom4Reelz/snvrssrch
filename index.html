@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <title>Soonaverse NFT Sales Query Tool</title>
   <style>
-	body {
+  
+body {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -114,6 +115,7 @@ th {
 
   </style>
 </head>
+	
 <body>
   <div class="container">
       <h1>Soonaverse </h1> 
@@ -141,7 +143,6 @@ th {
           <option value="lastTradedOn">Traded</option>
         </select>
 		</label>
-        <br><br>
 		<span>
         <button onclick="getFilteredNFTs()">Query NFTs</button>
         <button onclick="downloadTableAsCSV()">Download CSV</button>
@@ -154,7 +155,7 @@ th {
             <th>Name</th>
             <th>Price</th>
             <th>Owner</th>
-			<th>Date</th>
+			<th>Date Sold</th>
           </tr>
         </thead>
         <tbody id="nftTableBody">
@@ -163,7 +164,7 @@ th {
 	  </div>
     </div>
 
-  <script>
+<script>
 async function queryNFTs() {
 	const e = document.getElementById("categoryType").value,
 		t = document.getElementById("address").value;
@@ -180,7 +181,7 @@ async function queryNFTs() {
 	return console.log(o), o
 }
 
-async function getFilteredNFTs(e) {
+async function getFilteredNFTs() {
 	const t = document.getElementById("fromDate").valueAsNumber / 1e3;
 	if ("" == document.getElementById("address").value || null == document.getElementById("address").value || isNaN(t)) return alert("Address and Date fields must be filled out"), !1;
 	const n = document.getElementById("saleType").value,
@@ -233,6 +234,6 @@ function downloadTableAsCSV() {
 }
 
 
-  </script>
+</script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-# snvrssrch
+# snvrssrch - Soonaverse NFT Sales Search
 
 Soonaverse NFT Sales App
 

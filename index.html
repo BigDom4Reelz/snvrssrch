@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Soonaverse NFT Sales Query Tool</title>
+  <style>
+	body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f4f9fc;
+  background-image: url("https://lbomg.files.wordpress.com/2022/05/bits-screen-1.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  background-color: #fff;
+  margin-top: 50px;
+  padding: 20px;
+  border: 10px dashed #6699ff;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.results-container {
+  max-height: 400px;
+  overflow: auto;
+  margin: 20px auto;
+  background-color: #f5f8fa;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 64px;
+  color: #0039e6;
+  margin-bottom: -50px;
+  font-family: 'Raleway',sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+h2 {
+  text-align: center;
+  font-size: 32px;
+  color: #3bdef7;
+  font-family: 'Raleway',sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+label {
+  margin-bottom: 10px;
+}
+
+input[type="date"],
+select {
+  width: 300px;
+  padding: 5px;
+  border-radius: 5px;
+  border: 3px solid #ccc;
+}
+
+input[type="text"] {
+  width: 300px;
+  padding: 5px;
+  border-radius: 5px;
+  border: 3px solid #ccc;
+}
+
+button {
+  padding: 10px 20px;
+  border-radius: 30px;
+  border: none;
+  background-color: #4f8dd2;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 20px 10px;
+}
+
+button:hover {
+  background-color: #3778b8;
+}
+
+table {
+  margin-top: 20px;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: left;
+}
+
+th {
+  background-color: #f0f0f0;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+      <h1>Soonaverse </h1> 
+	  <h2>NFT Sales Query Tool</h2>
+      <form onsubmit="event.preventDefault();">
+        <label for="fromDate">From Date:
+		<input type="date" id="fromDate">
+		</label>
+        <br>
+        <label for="categoryType">Category Type:
+		<select id="categoryType">
+          <option value="space">Space</option>
+          <option value="collection">Collection</option>
+        </select>
+		</label>
+        <br>
+        <label for="address">Collection/Space Address:
+		<input type="text" id="address">
+		</label>
+        <br>
+        <label for="saleType">Sale Type:
+		<select id="saleType">
+          <option value="soldOn">Sold</option>
+		  <option value="createdOn">Created</option>
+          <option value="lastTradedOn">Traded</option>
+        </select>
+		</label>
+        <br><br>
+		<span>
+        <button onclick="getFilteredNFTs()">Query NFTs</button>
+        <button onclick="downloadTableAsCSV()">Download CSV</button>
+		</span>
+      </form>
+	  <div class="results-container">
+	  <table id="nftTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Owner</th>
+			<th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="nftTableBody">
+        </tbody>
+      </table>
+	  </div>
+    </div>
+
+  <script>
+async function queryNFTs() {
+	const e = document.getElementById("categoryType").value,
+		t = document.getElementById("address").value;
+	let n = "000000000000000000000000000000001661986800",
+		o = [];
+	for (;;) {
+		const d = `https://soonaverse.com/api/getMany?collection=nft&fieldName=${e}&fieldValue=${t}&startAfter=${n}`;
+		console.log(d);
+		const l = await fetch(d),
+			a = await l.json();
+		if (0 === a.length) break;
+		o = o.concat(a), n = a[a.length - 1].id
+	}
+	return console.log(o), o
+}
+
+async function getFilteredNFTs(e) {
+	const t = document.getElementById("fromDate").valueAsNumber / 1e3;
+	if ("" == document.getElementById("address").value || null == document.getElementById("address").value || isNaN(t)) return alert("Address and Date fields must be filled out"), !1;
+	const n = document.getElementById("saleType").value,
+		o = await queryNFTs();
+	if ("lastTradedOn" === n) {
+		const e = o.filter((e => e.lastTradedOn && e.lastTradedOn._seconds >= t));
+		console.log(e), displayNFTs(e)
+	} else if ("soldOn" === n) {
+		const e = o.filter((e => e.soldOn && e.soldOn._seconds >= t));
+		console.log(e), displayNFTs(e)
+	} else {
+		const e = o.filter((e => e.createdOn && e.createdOn._seconds >= t));
+		console.log(e), displayNFTs(e)
+	}
+}
+
+function displayNFTs(e) {
+	const t = document.getElementById("nftTableBody");
+	for (; t.firstChild;) t.removeChild(t.firstChild);
+	e.forEach((e => {
+		const n = document.createElement("tr"),
+			o = document.createElement("td");
+		o.textContent = `"${e.name}"`;
+		const d = document.createElement("td");
+		d.textContent = e.price;
+		const l = document.createElement("td");
+		l.textContent = e.owner;
+		const a = document.createElement("td"),
+			c = new Date(1e3 * e.soldOn._seconds);
+		let s = c.getFullYear(),
+			r = (c.getMonth() + 1).toString().padStart(2, "0");
+		var i = c.getDate().toString().padStart(2, "0") + "/" + r + "/" + s;
+		a.textContent = i, n.appendChild(o), n.appendChild(d), n.appendChild(l), n.appendChild(a), t.appendChild(n)
+	}))
+}
+
+function downloadTableAsCSV() {
+	const e = document.getElementById("nftTable").querySelectorAll("tbody tr");
+	let t;
+	t += ["Name", "Price", "Owner", "Date Sold"].join(",") + "\n", e.forEach((e => {
+		const n = [];
+		e.querySelectorAll("td").forEach((e => {
+			let t = e.innerText;
+			t.includes("#") && (t = `"${t}"`), n.push(t)
+		})), t += n.join(",") + "\n"
+	}));
+	const n = "data:text/csv;charset=utf-8," + encodeURIComponent(t),
+		o = document.createElement("a");
+	o.setAttribute("href", n), o.setAttribute("download", "nftTable.csv"), document.body.appendChild(o), o.click(), document.body.removeChild(o)
+}
+
+
+  </script>
+</body>
+</html>
